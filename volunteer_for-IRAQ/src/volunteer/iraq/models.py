@@ -49,12 +49,10 @@ class Classification(models.Model):
         return self.classification
 
 class AdminHOD(models.Model):
-    id=models.AutoField(primary_key=True)
     admin=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    address=models.TextField()
-    # name=models.CharField(max_length=255)
-    phone=models.CharField(max_length=255)
+    phone=models.CharField(max_length=255,null=True)
     birth=models.DateField(max_length=255)
+    facebook=models.URLField(max_length=255,default='https://www.facebook.com/')
     gender=models.CharField(max_length=255)
     employee=models.CharField(max_length=255)
     region=models.CharField(max_length=255,null=False)
@@ -63,15 +61,21 @@ class AdminHOD(models.Model):
     updated_at=models.DateTimeField(auto_now_add=True)
     fcm_token=models.TextField(default="")
     objects=models.Manager()
+    def save(self,*args, **kwargs):
+        super().save(*args, **kwargs)
+        profile_pic =Image.open(self.profile_pic.path)
+        if profile_pic.width > 300 or profile_pic.height > 300:
+            output_size =(300, 300)
+            profile_pic.thumbnail(output_size)
+            profile_pic.save(self.profile_pic.path)
 
 
+    
 class People(models.Model):
-    id=models.AutoField(primary_key=True)
     admin=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    address=models.TextField()
-    # name=models.CharField(max_length=255)
     phone=models.CharField(max_length=255)
-    birth=models.DateField(max_length=255)
+    birth=models.DateField(max_length=255 , null=False)
+    facebook=models.URLField(max_length=255,default='www.facebook.com')
     gender=models.CharField(max_length=255)
     employee=models.CharField(max_length=255)
     region=models.CharField(max_length=255,null=False)
@@ -83,24 +87,6 @@ class People(models.Model):
 
 
 
-
-
-
-# class Staff(models.Model):
-#     id=models.AutoField(primary_key=True)
-#     admin=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-#     address=models.TextField()
-#     # name=models.CharField(max_length=255)
-#     phone=models.CharField(max_length=255)
-#     birth=models.DateField(max_length=255)
-#     gender=models.CharField(max_length=255)
-#     employee=models.CharField(max_length=255)
-#     region=models.CharField(max_length=255,null=False)
-#     profile_pic=models.ImageField(default='default.jpg', upload_to='profile_pics')
-#     created_at=models.DateTimeField(auto_now_add=True)
-#     updated_at=models.DateTimeField(auto_now_add=True)
-#     fcm_token=models.TextField(default="")
-    # objects=models.Manager()
 
 
 class Intity(models.Model):
@@ -245,15 +231,9 @@ class Reply(models.Model):
 def create_user_profile(sender,instance,created,**kwargs):
     if created:
         if instance.user_type==1:
-            AdminHOD.objects.create(admin=instance,address="",gender="",employee="",region="",birth="1994-10-07")
+            AdminHOD.objects.create(admin=instance,phone="",birth="1994-10-07",gender="",employee="",region="",fcm_token="")
         if instance.user_type==2:
-            People.objects.create(admin=instance,address="",gender="",employee="",region="",birth="1994-10-07")
-            # birth="",gender="",employee="",region="",
-            # Intity.objects.create(admin=instance)
-            # Intity.objects.create(admin=instance,name="",region="",profile_pic="",intities_pic="",created="",classification="",works="",abstract="",permission="")
-        # if instance.user_type==3:
-        #     People.objects.create(admin=instance,address="")
-            # People.objects.create(admin=instance,region=Region.objects.get(id=1),profile_pic="",gender="")
+            People.objects.create(admin=instance,fcm_token="",gender="",employee="",region="",birth="1994-10-07")
             
     def save(self,*args, **kwargs):
         super().save(*args, **kwargs)
